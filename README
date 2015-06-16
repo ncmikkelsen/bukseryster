@@ -1,0 +1,4 @@
+Bukseryster is a 2 part system:
+
+1: python code that pulls notification data from facebook (via RSS) and waits patiently on a server somewhere for UDP connections on port 31337
+3: Arduino code that establishes connection to the python code via UDP and asks for then number of notifications since last time.
