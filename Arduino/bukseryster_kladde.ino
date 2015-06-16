@@ -1,29 +1,16 @@
 /*
-ISS LAMP
-
-This sketch gets ISS data from a python script on robottobox
-using an Arduino Wiznet Ethernet shield.
-
-and ALSO NTP time from the danish NTP pool, with dns lookup.
-
-Todo:
-VFD to class .. or not.. 800 lines of code isn't that bad.. is it?
-
+This sketch gets number of facebook notifications data from a python script on bropdox.moore.dk using an Arduino Wiznet Ethernet shield.
 */
 #include <SPI.h>
 #include <Ethernet.h>
-#include <Dns.h>
 
-byte mac[] = {  0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF }; //MAC address of the Ethernet shield
+byte mac[] = {  0x90, 0xA2, 0xDA, 0x00, 0x89, 0x60 }; //MAC address of the Ethernet shield
 
-IPAddress DNS_IP(8,8,8,8); //Google DNS.
 
-char hostName[] = "bropdox.moore.dk"; //should init with a null-char termination.
 IPAddress bropdoxIP;//init empty IP adress container
 
 // Initialize the Ethernet client libraries
 EthernetClient client;
-DNSClient my_dns; //for dns lookup of NTP server
 EthernetUDP Udp; // A UDP instance to let us send and receive packets over UDP
 
 
@@ -37,6 +24,15 @@ int UDPretries = 0;
 unsigned int likes=0; //number of new likes
 
 void setup() {
+
+	Serial.begin(9600);
+
+	Serial.println("Reactor Online.");
+	Serial.println("Sensors Online.");
+	Serial.println("Weapons Online.");
+	Serial.println("All systems nominal.");
+
+	bropdoxIP=IPAddress(62,212,66,171);
 
     // start the Ethernet connection:
     if (Ethernet.begin(mac) == 0) while(1); //dead end.
@@ -55,9 +51,7 @@ void setup() {
     Udp.begin(localPort);
     delay(1000); //give the ethernet shield some time.
 
-    my_dns.begin(DNS_IP);
 
-    lookup_ip();
 
     delay(500);
 
@@ -118,18 +112,10 @@ void loop()
 
 
 
-void lookup_ip()
-{
-    if(my_dns.getHostByName(hostName, bropdoxIP) !=1)
-    {
-        Serial.println("DNS lookup failed");
-        while(1); //dead end
-    }
-}
 
 void(* resetFunc) () = 0; //declare reset function @ address 0
 
-void UDPwait(boolean) //true if ISS, false if NTP.
+void UDPwait() //true if ISS, false if NTP.
 {
 while (!Udp.parsePacket())
   {
@@ -195,5 +181,6 @@ void handleUDP()
 {
     memset(packetBuffer, 0, NTP_PACKET_SIZE); //reset packet buffer
     int read_bytes=Udp.read(packetBuffer,NTP_PACKET_SIZE);  // read the packet into the buffer
-    likes=(unsigned int)atoi(packetBuffer[0]);
+    char likes=packetBuffer[0];
+    likes=(unsigned int)atoi(&likes);
  }
